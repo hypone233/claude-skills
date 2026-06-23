@@ -1,42 +1,24 @@
-# Claude Memory Index
+# Claude Memory — 全局索引
 
-> 轻量索引 — 每次对话自动加载。深入细节时按需读取具体文件。
+> 始终加载。列出所有受管理的项目。深入细节按需读取。
 
-## 当前项目
+## 活跃项目
 
-- **项目名**: {project_name}
-- **代码路径**: `{repo_path}`
-- **知识库路径**: `{kb_path}`
-- **当前阶段**: {current_phase}
-- **进度详情**: → [[progress]]
+| 项目 | 代号 | 阶段 | 上次活动 | 详情 |
+|---|---|---|---|---|
+| {project_name} | `{project_slug}` | {current_phase} | {date} | → [[{project_slug}/_index]] |
 
-## 关键决策
+## 全局环境
 
-| 决策 | 选择 | 理由 |
-|---|---|---|
-| {decision_1_title} | {decision_1_choice} | {decision_1_rationale} |
-| 详情 | → [[decisions]] | |
-
-## 环境约束
-
-- OS: {os}
-- Shell: {shell}（{command_quirk}）
-- {key_dependency}: {version}
-- LLM: {llm_provider} {llm_model}
+- OS: {os} · Shell: {shell}（{command_quirk}）
+- {key_dependency}: {version} · LLM: {llm_provider} {llm_model}
 - 详情: → [[environment]]
 
-## 用户偏好
+## 全局偏好
 
-- {preference_1}
-- {preference_2}
+- {preference_1} · {preference_2}
 - 详情: → [[preferences]]
 
-## 组件/智能体清单
+## 当前焦点
 
-| 编号 | 名称 | 职责 | 文件 |
-|---|---|---|---|
-| {id} | {name} | {role} | {file_ref} |
-
-## 快速恢复
-
-下次对话只需说：「{resume_phrase}」
+`{project_slug}` — **下一步**: {next_action}

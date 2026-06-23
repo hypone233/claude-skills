@@ -83,26 +83,45 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
 
 ---
 
-## 文件架构：6 文件 × 3 层级
+## 文件架构：多项目 × 3 层级
 
 ```
 {obsidian_vault}/
-├── claude-memory/           ← 从 memory-package/ 复制而来
-│
-├── TIER 1 — 始终加载 ─────────────────────
-├── _index.md                ← 50-80行。项目名、当前阶段、关键决策一行、
-│                               智能体/组件清单、环境亮点、恢复口令。
-│                               用 [[wikilinks]] 链接到 Tier 2 文件。
-│
-├── TIER 2 — 按需加载 ─────────────────────
-├── project.md               ← 项目元信息：涉众、仓库路径、目录结构
-├── decisions.md             ← ADR 格式：编号、日期、决策、理由、替代方案
-├── progress.md              ← 更新最频繁：checkbox 待办、产出物清单、上次运行状态
-├── environment.md           ← 最有价值的文件：OS/Shell/PATH 问题、版本、API 配置
-│
-├── TIER 3 — 首次交互加载 ─────────────────
-└── preferences.md           ← 交互风格、编码习惯、技术偏好
+└── claude-memory/                   ← 从 memory-package/ 复制而来
+    │
+    ├── _index.md                    ← TIER 1 全局：始终加载
+    │   列出所有项目 + 全局环境摘要 + 当前焦点
+    │
+    ├── environment.md               ← TIER 2 全局：按需加载（写一次，所有项目共享）
+    │   OS、Shell、命令坑、依赖版本、API 配置
+    │
+    ├── preferences.md               ← TIER 3 全局：首次交互加载（写一次）
+    │   交互风格、编码习惯、技术偏好
+    │
+    ├── {project-slug-1}/            ← 项目 A
+    │   ├── _index.md                ← TIER 1 项目级：按需加载
+    │   ├── project.md               ← 涉众、目录结构、业务流程
+    │   ├── decisions.md             ← ADR 格式决策记录
+    │   └── progress.md              ← 待办 + 产出物 + 上次运行
+    │
+    └── {project-slug-2}/            ← 项目 B
+        ├── _index.md
+        ├── project.md
+        ├── decisions.md
+        └── progress.md
 ```
+
+### 为什么共享 + 分项目？
+
+| 文件 | 层级 | 理由 |
+|---|---|---|
+| `environment.md` | 全局共享 | 同一台机器的 OS/Shell/PATH 不会随项目变 |
+| `preferences.md` | 全局共享 | 同一个人的交互风格不会随项目变 |
+| `_index.md`（顶层） | 全局 | 快速定位「现在在搞哪个项目」 |
+| `project.md` | 项目级 | 每个项目的涉众、目录、流程完全不同 |
+| `decisions.md` | 项目级 | 每个项目的技术选型独立 |
+| `progress.md` | 项目级 | 每个项目的进度独立 |
+| `_index.md`（项目级） | 项目级 | 项目内快速恢复上下文 |
 
 ### 为什么分层而不是单文件？
 
@@ -157,19 +176,21 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
 
 ```
 会话开始
-  ├─ Read claude-memory/_index.md          （始终）
-  ├─ Read claude-memory/progress.md         （如果是继续项目）
-  ├─ Read claude-memory/environment.md      （如果要跑命令）
-  └─ Read claude-memory/decisions.md        （如果要改架构）
+  ├─ Read claude-memory/_index.md              （始终 — 全局索引）
+  ├─ Read claude-memory/environment.md          （如果要跑命令）
+  ├─ Read claude-memory/{project}/_index.md     （项目级索引）
+  ├─ Read claude-memory/{project}/progress.md   （如果是继续项目）
+  └─ Read claude-memory/{project}/decisions.md  （如果要改架构）
 
 会话中
-  ├─ 每个重大决策 → 追加 decisions.md
-  ├─ 每个里程碑   → 更新 progress.md
-  └─ 每次被纠正   → 更新对应文件
+  ├─ 每个重大决策 → 追加 {project}/decisions.md
+  ├─ 每个里程碑   → 更新 {project}/progress.md
+  ├─ 每次被纠正   → 更新对应文件
+  └─ 新项目启动   → 复制 memory-package/{project-slug}/ → 新子目录
 
 会话结束
-  ├─ 刷新 progress.md（待办 + 产出物清单）
-  ├─ 检查 _index.md 摘要是否过时
+  ├─ 刷新 {project}/progress.md
+  ├─ 刷新 claude-memory/_index.md 项目表
   └─ 告知用户本次更新了哪些文件
 ```
 
