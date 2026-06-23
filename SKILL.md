@@ -69,10 +69,25 @@ AI 编程助手的最大浪费不是 token 消耗，是**上下文重建**。每
 
 ---
 
+## 快速开始：复制模板包
+
+Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
+
+```
+1. 复制 memory-package/ → {obsidian_vault}/claude-memory/
+2. 逐文件填入 {PLACEHOLDER} 占位符
+3. _index.md 填完后，去掉不相关的骨架行
+```
+
+模板包包含 6 个带占位符的骨架文件，每个文件头都有注释说明填什么。
+
+---
+
 ## 文件架构：6 文件 × 3 层级
 
 ```
-claude-memory/               ← 放在 Obsidian vault 根目录下
+{obsidian_vault}/
+├── claude-memory/           ← 从 memory-package/ 复制而来
 │
 ├── TIER 1 — 始终加载 ─────────────────────
 ├── _index.md                ← 50-80行。项目名、当前阶段、关键决策一行、
