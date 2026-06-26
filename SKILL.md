@@ -60,15 +60,16 @@ AI 编程助手的最大浪费不是 token 消耗，是**上下文重建**。每
 - 用户说 "继续 XX 项目"、"上次那个"、"回到..."、"resume..."
 - 用户说 "使用知识库"、"查询知识库"、"查笔记"、"查需求"、"知识库" → 先检查 Claude Code 内置 memory 是否已有 vault 路径；若有则直接用，若无则读取 _index.md 定位，然后存入 Claude Code memory
 
-**写记忆（增量更新）：**
+**写记忆（增量更新）—— 🔴 AI 必须主动识别，不等用户指令：**
 - **用户首次告知 vault/知识库位置 → 必须写入 Claude Code 内置 memory**（`~/.claude/projects/{hash}/memory/knowledge-base-location.md`），含 vault 路径和目录结构，确保后续会话自动加载无需搜索
 - 首次接触新项目 → 脚手架 `_index.md` + `project.md`
 - 项目出现独立模块 → 复制 `modules/{module-slug}/` 模板 + 更新项目 `_index.md` 模块清单
 - 任何非平凡的技术选择 → 追加 `decisions.md`（ADR 格式），跨模块放项目级，单模块放模块级
-- 命令失败并找到原因 → 更新 `environment.md`
-- 用户纠正你（路径/工具/习惯）→ 更新对应文件
+- 命令失败并找到原因 → 更新 `environment.md`（**主动写入，不等用户说**）
+- 用户纠正你（路径/工具/习惯）→ 更新对应文件（**主动写入**）
 - 完成一个里程碑 → 更新 `progress.md`（项目级 + 模块级双写）
 - 用户明确说 "记住这个"、"save this"、"更新记忆"
+- **🆕 发现潜在高价值信息 → 主动判断：自动存储 or 询问用户**（见核心原则 9）
 
 ---
 
@@ -232,6 +233,11 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
   ├─ 刷新 modules/{module}/progress.md          （如果在该模块工作）
   ├─ 刷新 {project}/progress.md                 （聚合模块状态）
   ├─ 刷新 claude-memory/_index.md 项目表
+  ├─ 主动扫描：本次会话有哪些值得存储但还没存的？ ← 🆕
+  │     ├─ 环境坑？→ 写入 environment.md
+  │     ├─ 技术决策？→ 写入 decisions.md
+  │     ├─ 新偏好/习惯？→ 写入 preferences.md
+  │     └─ 不确定是否值得存？→ 告知用户询问
   └─ 告知用户本次更新了哪些文件
 ```
 
@@ -256,6 +262,12 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
 6. **Obsidian links create a web, not a list.** 用 `[[wikilinks]]` 把 AI 记忆和项目知识织成一张网。当 AI 读一条 ADR 时，能顺着链接走到环境约束、项目背景、涉众需求。
 7. **Don't record what the repo already records.** 代码结构、git 历史、config 文件已经是真相。记忆只记录代码推导不出的东西。
 8. **Human-readable, human-editable.** AI 写的任何记忆，用户都该能在 Obsidian 里打开、看懂、修改。不引入 JSON、数据库、向量嵌入。
+9. **🆕 Proactive capture — don't wait for the user to say "remember".** 当发生以下情况时，主动判断价值并行动：
+   - **自动存储**（高价值、无争议）：环境踩坑、命令修正、发现的路径/配置问题。直接写入对应文件。
+   - **询问用户**（有价值但需确认）：设计决策的微妙权衡、用户不经意间透露的偏好、新发现的工具链。结束时简短告知「本次发现了 X，要存入记忆吗？」
+   - **不存储**：代码本身的改动、一次性操作、已经在 git commit message 里的信息。
+   
+   核心判断标准：**下周新会话时，这条信息能帮我少走弯路吗？** 如果能，就值得存。
 
 ---
 
