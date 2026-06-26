@@ -2,6 +2,12 @@
 
 > 始终加载。列出所有受管理的项目。深入细节按需读取。
 
+## Vault 路径
+
+- 根目录: `{vault_path}`
+- 知识库: `{vault_path}/knowledge-base/`
+- 记忆: `{vault_path}/claude-memory/`
+
 ## 活跃项目
 
 | 项目 | 代号 | 阶段 | 上次活动 | 详情 |

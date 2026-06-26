@@ -1,6 +1,6 @@
 ---
 name: claude-memory
-description: "Layered project memory system for persistent AI context across sessions. Designed to live inside an Obsidian vault — memory files and project knowledge interlink via [[wikilinks]]. Use when starting a project, recording decisions, tracking progress, documenting environment quirks, or resuming after a break. Generates 6 structured markdown files with a lightweight _index.md (50-80 lines) for fast context restoration — no more re-explaining project background every session."
+description: "Layered project memory system for persistent AI context across sessions. Designed to live inside an Obsidian vault — memory files and project knowledge interlink via [[wikilinks]]. Use when starting a project, recording decisions, tracking progress, documenting environment quirks, resuming after a break, or querying the knowledge base (使用知识库 / 查询知识库 / 查笔记 / 查需求 / knowledge base). Generates 6 structured markdown files with a lightweight _index.md (50-80 lines) for fast context restoration — no more re-explaining project background every session."
 ---
 
 # Claude Memory — Obsidian-Native Project Memory
@@ -58,6 +58,7 @@ AI 编程助手的最大浪费不是 token 消耗，是**上下文重建**。每
 **读记忆（Tier 1 始终加载）：**
 - 新会话开始，检测到对话涉及旧项目
 - 用户说 "继续 XX 项目"、"上次那个"、"回到..."、"resume..."
+- 用户说 "使用知识库"、"查询知识库"、"查笔记"、"查需求"、"知识库" → 读取 _index.md 定位 vault 和知识库路径
 
 **写记忆（增量更新）：**
 - 首次接触新项目 → 脚手架 `_index.md` + `project.md`
