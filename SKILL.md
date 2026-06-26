@@ -58,9 +58,10 @@ AI 编程助手的最大浪费不是 token 消耗，是**上下文重建**。每
 **读记忆（Tier 1 始终加载）：**
 - 新会话开始，检测到对话涉及旧项目
 - 用户说 "继续 XX 项目"、"上次那个"、"回到..."、"resume..."
-- 用户说 "使用知识库"、"查询知识库"、"查笔记"、"查需求"、"知识库" → 读取 _index.md 定位 vault 和知识库路径
+- 用户说 "使用知识库"、"查询知识库"、"查笔记"、"查需求"、"知识库" → 先检查 Claude Code 内置 memory 是否已有 vault 路径；若有则直接用，若无则读取 _index.md 定位，然后存入 Claude Code memory
 
 **写记忆（增量更新）：**
+- **用户首次告知 vault/知识库位置 → 必须写入 Claude Code 内置 memory**（`~/.claude/projects/{hash}/memory/knowledge-base-location.md`），含 vault 路径和目录结构，确保后续会话自动加载无需搜索
 - 首次接触新项目 → 脚手架 `_index.md` + `project.md`
 - 任何非平凡的技术选择 → 追加 `decisions.md`（ADR 格式）
 - 命令失败并找到原因 → 更新 `environment.md`
@@ -177,13 +178,15 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
 
 ```
 会话开始
-  ├─ Read claude-memory/_index.md              （始终 — 全局索引）
-  ├─ Read claude-memory/environment.md          （如果要跑命令）
+  ├─ 检查 Claude Code 内置 memory 是否已有 vault 路径  ← 新增：一步命中
+  ├─ （若无）Read claude-memory/_index.md              （始终 — 全局索引）
+  ├─ （若无）Read claude-memory/environment.md          （如果要跑命令）
   ├─ Read claude-memory/{project}/_index.md     （项目级索引）
   ├─ Read claude-memory/{project}/progress.md   （如果是继续项目）
   └─ Read claude-memory/{project}/decisions.md  （如果要改架构）
 
 会话中
+  ├─ 首次确认 vault 路径 → 写入 Claude Code 内置 memory  ← 新增
   ├─ 每个重大决策 → 追加 {project}/decisions.md
   ├─ 每个里程碑   → 更新 {project}/progress.md
   ├─ 每次被纠正   → 更新对应文件
@@ -194,6 +197,15 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
   ├─ 刷新 claude-memory/_index.md 项目表
   └─ 告知用户本次更新了哪些文件
 ```
+
+### 两层记忆协作
+
+| 记忆层 | 位置 | 职责 |
+|--------|------|------|
+| Claude Code 内置 memory | `~/.claude/projects/{hash}/memory/` | 快速定位：vault 路径、知识库位置、用户关键偏好。**跨会话自动加载，无需读文件** |
+| Obsidian vault 记忆 | `{vault}/claude-memory/` | 深度记忆：项目进度、ADR、环境踩坑、完整偏好。**按需读取，双向链接** |
+
+**关键规则：vault 路径必须同时存在于两层。** 内置 memory 保证下次会话秒找到 vault；vault 内 `_index.md` 保证 Obsidian 用户也能看到完整上下文。
 
 ---
 
