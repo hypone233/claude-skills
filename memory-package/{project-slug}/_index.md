@@ -10,6 +10,13 @@
 - **当前阶段**: {current_phase}
 - 详情: → [[{project_slug}/project]]
 
+## 模块清单
+
+| 模块 | 代号 | 职责 | 状态 | 详情 |
+|---|---|---|---|---|
+| {module_1_name} | `{module_1_slug}` | {module_1_role} | {module_1_status} | → [[modules/{module_1_slug}/_index]] |
+| {module_2_name} | `{module_2_slug}` | {module_2_role} | {module_2_status} | → [[modules/{module_2_slug}/_index]] |
+
 ## 关键决策
 
 | 决策 | 选择 | 理由 |

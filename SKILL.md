@@ -63,10 +63,11 @@ AI 编程助手的最大浪费不是 token 消耗，是**上下文重建**。每
 **写记忆（增量更新）：**
 - **用户首次告知 vault/知识库位置 → 必须写入 Claude Code 内置 memory**（`~/.claude/projects/{hash}/memory/knowledge-base-location.md`），含 vault 路径和目录结构，确保后续会话自动加载无需搜索
 - 首次接触新项目 → 脚手架 `_index.md` + `project.md`
-- 任何非平凡的技术选择 → 追加 `decisions.md`（ADR 格式）
+- 项目出现独立模块 → 复制 `modules/{module-slug}/` 模板 + 更新项目 `_index.md` 模块清单
+- 任何非平凡的技术选择 → 追加 `decisions.md`（ADR 格式），跨模块放项目级，单模块放模块级
 - 命令失败并找到原因 → 更新 `environment.md`
 - 用户纠正你（路径/工具/习惯）→ 更新对应文件
-- 完成一个里程碑 → 更新 `progress.md`
+- 完成一个里程碑 → 更新 `progress.md`（项目级 + 模块级双写）
 - 用户明确说 "记住这个"、"save this"、"更新记忆"
 
 ---
@@ -85,7 +86,7 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
 
 ---
 
-## 文件架构：多项目 × 3 层级
+## 文件架构：多项目 × 4 层级
 
 ```
 {obsidian_vault}/
@@ -101,19 +102,24 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
     │   交互风格、编码习惯、技术偏好
     │
     ├── {project-slug-1}/            ← 项目 A
-    │   ├── _index.md                ← TIER 1 项目级：按需加载
+    │   ├── _index.md                ← TIER 1 项目级：按需加载，含模块清单
     │   ├── project.md               ← 涉众、目录结构、业务流程
-    │   ├── decisions.md             ← ADR 格式决策记录
-    │   └── progress.md              ← 待办 + 产出物 + 上次运行
+    │   ├── decisions.md             ← 项目级 ADR（跨模块决策）
+    │   ├── progress.md              ← 项目级进度（聚合各模块）
+    │   │
+    │   └── modules/                 ← 🆕 模块层（可选）
+    │       └── {module-slug}/
+    │           ├── _index.md        ← 模块索引（一句定位）
+    │           ├── decisions.md     ← 模块级 ADR（仅该模块独有决策）
+    │           └── progress.md      ← 模块级进度
     │
     └── {project-slug-2}/            ← 项目 B
         ├── _index.md
-        ├── project.md
-        ├── decisions.md
-        └── progress.md
+        ├── ...
+        └── modules/
 ```
 
-### 为什么共享 + 分项目？
+### 为什么 4 层？
 
 | 文件 | 层级 | 理由 |
 |---|---|---|
@@ -121,8 +127,16 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
 | `preferences.md` | 全局共享 | 同一个人的交互风格不会随项目变 |
 | `_index.md`（顶层） | 全局 | 快速定位「现在在搞哪个项目」 |
 | `project.md` | 项目级 | 每个项目的涉众、目录、流程完全不同 |
-| `decisions.md` | 项目级 | 每个项目的技术选型独立 |
-| `progress.md` | 项目级 | 每个项目的进度独立 |
+| `decisions.md` | 项目级 | 跨模块的技术选型 |
+| `progress.md` | 项目级 | 聚合所有模块的进度摘要 |
+| `modules/{slug}/_index.md` | 🆕 模块级 | 一句话说清模块职责 + 当前状态 |
+| `modules/{slug}/decisions.md` | 🆕 模块级 | 仅该模块独有决策（跨模块的放项目级） |
+| `modules/{slug}/progress.md` | 🆕 模块级 | 该模块的待办 + 产出物 |
+
+**模块层设计原则：**
+- 比项目层更轻（3 文件 vs 4 文件），没有 `project.md`（元信息属于项目级）
+- 可选——简单项目不需要模块层
+- 项目级 `_index.md` 的「模块清单」表是模块的导航入口
 | `_index.md`（项目级） | 项目级 | 项目内快速恢复上下文 |
 
 ### 为什么分层而不是单文件？
@@ -172,28 +186,51 @@ Skill 自带一套空模板在 `memory-package/` 目录。开新项目时：
 
 结束时必须更新三件事：已完成（checkbox）、待完成（checkbox）、产出物清单（文件名+行数+状态）
 
+### 🆕 模块级文件规范
+
+模块层文件比项目层更轻，聚焦单一模块：
+
+**`modules/{slug}/_index.md`** — 一句话定位模块
+- 模块职责（不超过两行）
+- 当前状态（设计中/开发中/已完成/已废弃）
+- 关键文件路径
+- 链接到项目级 `[[{project}/_index]]`
+
+**`modules/{slug}/decisions.md`** — 仅记录该模块独有的决策
+- 跨模块决策放项目级 `decisions.md`
+- 模块前缀编号避免冲突（如 `ADR-ORD001` 表示订单模块）
+
+**`modules/{slug}/progress.md`** — 比项目级 `progress.md` 更细粒度
+- 该模块特有的待办 + 产出物
+- 项目级 `progress.md` 只保留各模块状态的摘要
+
 ---
 
 ## 工作流
 
 ```
 会话开始
-  ├─ 检查 Claude Code 内置 memory 是否已有 vault 路径  ← 新增：一步命中
+  ├─ 检查 Claude Code 内置 memory 是否已有 vault 路径  ← 一步命中
   ├─ （若无）Read claude-memory/_index.md              （始终 — 全局索引）
   ├─ （若无）Read claude-memory/environment.md          （如果要跑命令）
-  ├─ Read claude-memory/{project}/_index.md     （项目级索引）
+  ├─ Read claude-memory/{project}/_index.md     （项目级索引 + 模块清单）
   ├─ Read claude-memory/{project}/progress.md   （如果是继续项目）
-  └─ Read claude-memory/{project}/decisions.md  （如果要改架构）
+  ├─ Read claude-memory/{project}/decisions.md  （如果要改架构）
+  └─ Read modules/{module}/_index.md            （如果聚焦特定模块）
 
 会话中
-  ├─ 首次确认 vault 路径 → 写入 Claude Code 内置 memory  ← 新增
-  ├─ 每个重大决策 → 追加 {project}/decisions.md
-  ├─ 每个里程碑   → 更新 {project}/progress.md
+  ├─ 首次确认 vault 路径 → 写入 Claude Code 内置 memory
+  ├─ 每个重大决策 → 追加 {project}/decisions.md 或 modules/{module}/decisions.md
+  │     ├─ 跨模块 → 项目级 decisions.md
+  │     └─ 仅影响一个模块 → 模块级 decisions.md
+  ├─ 每个里程碑   → 更新 {project}/progress.md + modules/{module}/progress.md
   ├─ 每次被纠正   → 更新对应文件
-  └─ 新项目启动   → 复制 memory-package/{project-slug}/ → 新子目录
+  ├─ 新项目启动   → 复制 memory-package/{project-slug}/ → 新子目录
+  └─ 新模块出现   → 复制 modules/{module-slug}/ 模板 + 更新项目 _index.md 模块清单
 
 会话结束
-  ├─ 刷新 {project}/progress.md
+  ├─ 刷新 modules/{module}/progress.md          （如果在该模块工作）
+  ├─ 刷新 {project}/progress.md                 （聚合模块状态）
   ├─ 刷新 claude-memory/_index.md 项目表
   └─ 告知用户本次更新了哪些文件
 ```
